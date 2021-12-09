@@ -50,7 +50,7 @@ class myClient():
         
 if __name__ == '__main__':    
     port = 5000
-    ipaddy = '24.158.110.60'
+    ipaddy = ''
     username = input("Choose your username: ")
     client = myClient()
     client.clientConnect(port, ipaddy, username)

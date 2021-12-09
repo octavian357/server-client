@@ -18,9 +18,9 @@ class myServer:
         self.hostname = socket.gethostname()
         self.local_ip = socket.gethostbyname(self.hostname)
 
-        # Lists For Clients and Their Nicknames
-        self.clients = set()
-        self.nicknames = []
+        # Lists For Clients and Their usernames
+        self.clients = {}
+        #self.usernames = []
 
         #start up information
         print(f'LINK START!')
@@ -31,6 +31,7 @@ class myServer:
     # Sending Messages To All Connected Clients
     def broadcast(self, client, message):
         print(message.decode('ascii'))
+        #print(len(self.clients))
         for c in self.clients:
             if c != client:
                 c.send(message)
@@ -44,12 +45,15 @@ class myServer:
                 self.broadcast(client, message)
             except:
                 # Removing And Closing Clients
-                index = self.clients.index(client)
-                self.clients.remove(client)
+                print('in except')
+                #index = self.clients.index(client)
+                username = self.clients[client]
+                self.clients.pop(client)
                 client.close()
-                nickname = self.nicknames[index]
-                self.broadcast(client, '{} left!'.format(nickname).encode('ascii'))
-                self.nicknames.remove(nickname)
+                #self.username = self.usernames[index]
+                
+                self.broadcast(client, '{} left!'.format(username).encode('ascii'))
+                #self.usernames.remove(username)
                 break
 
     # Receiving / Listening Function
@@ -59,15 +63,16 @@ class myServer:
             client, address = self.server.accept()
             print("Connected with {}".format(str(address)))
 
-            # Request And Store Nickname
+            # Request And Store username
             client.send('NICK'.encode('ascii'))
-            nickname = client.recv(1024).decode('ascii')
-            self.nicknames.append(nickname)
-            self.clients.add(client)
+            username = client.recv(1024).decode('ascii')
             
-            # Print And Broadcast Nickname
-            print("Nickname is {}".format(nickname))
-            self.broadcast(client, "{} joined!".format(nickname).encode('ascii'))
+            #self.usernames.append(username)
+            #self.clients.add(client)
+            self.clients[client] = username
+            # Print And Broadcast username
+            #print("username is {}".format(username))
+            self.broadcast(client, "{} joined the chat!".format(username).encode('ascii'))
             client.send('Connected to server!'.encode('ascii'))
 
             # Start Handling Thread For Client
@@ -86,12 +91,13 @@ class myServer:
     def startServer(self):
         thread = threading.Thread(target=self.receive)
         thread.start()
+        #self.receive()
 
         write_thread = threading.Thread(target=self.write)
         write_thread.start()
  
 if __name__ == '__main__':     
-    host = '192.168.0.124'
+    host = ''
     port = 5000
     server = myServer(host, port)
     server.startServer()
